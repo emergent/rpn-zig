@@ -1,6 +1,7 @@
 const std = @import("std");
 const stdin_file = std.io.getStdIn();
 const stdout_file = std.io.getStdOut();
+const calculator = @import("calculator.zig");
 
 const MAX_CHARS = 256;
 
@@ -11,8 +12,7 @@ pub fn main() !void {
     var stdin = br.reader();
     var stdout = bw.writer();
 
-    //var buf: [4096]u8 = undefined;
-    var buf: [16]u8 = undefined;
+    var buf: [4096]u8 = undefined;
     while (true) {
         try stdout.print("> ", .{});
         try bw.flush();
@@ -20,21 +20,17 @@ pub fn main() !void {
         const bytes = try stdin.readUntilDelimiterOrEof(&buf, '\n');
 
         if (bytes) |b| {
+            if (b.len == 0) continue;
             if (std.mem.eql(u8, b, "quit")) {
                 break;
             }
             try stdout.print("input: {s}\n", .{b});
+            const res = try calculator.eval(b);
+            try stdout.print("result: {}\n", .{res});
         } else {
             try stdout.print("\n", .{});
             try bw.flush();
             break;
         }
     }
-}
-
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
 }
